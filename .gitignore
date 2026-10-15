@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Build files
+dist/
+build/
+
+# Logs
+*.log
+logs/
+
+# Coverage
+coverage/
+
+# Cache
+.cache/
+.npm/
+.eslintcache
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Secret Keys
+serviceAccountKey.json
+**/serviceAccountKey.json
+.env
+*.pem
