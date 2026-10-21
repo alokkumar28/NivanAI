@@ -14,8 +14,6 @@ export const createConversation = async (req, res) => {
       userId,
     });
     return res.status(201).json({
-      success: true,
-      message: "Conversation created successfully",
       conversation,
     });
   } catch (error) {
@@ -62,8 +60,6 @@ export const updateConversation = async (req, res) => {
     }
 
     return res.status(200).json({
-      success: true,
-      message: "Conversation updated successfully",
       conversation,
     });
   } catch (error) {
@@ -89,8 +85,6 @@ export const getConversations = async (req, res) => {
       updatedAt: -1, 
     });
     return res.status(200).json({
-      success: true,
-      count: conversations.length,
       conversations,
     });
   } catch (error) {
@@ -106,15 +100,6 @@ export const getConversations = async (req, res) => {
 export const saveMessage = async (req, res) => {
   try {
     const { conversationId, role, content } = req.body;
-    const userId = req.headers["x-user-id"];
-
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized: missing user context",
-      });
-    }
-
     if (!conversationId || !role || !content) {
       return res.status(400).json({
         success: false,
@@ -131,7 +116,6 @@ export const saveMessage = async (req, res) => {
 
     const conversation = await Conversation.findOne({
       _id: conversationId,
-      userId,
     });
 
     if (!conversation) {
@@ -151,8 +135,6 @@ export const saveMessage = async (req, res) => {
     await conversation.save();
 
     return res.status(201).json({
-      success: true,
-      message: "Message saved",
       message,
     });
   } catch (error) {
@@ -181,8 +163,6 @@ export const getMessages = async (req, res) => {
     });
 
     return res.status(200).json({
-      success: true,
-      count: messages.length,
       messages,
     });
   } catch (error) {

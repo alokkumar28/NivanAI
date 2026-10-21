@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import proxy from "express-http-proxy"
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import morgan from "morgan"
 import { getCurrentUser } from "./controllers/user.controller.js";
 import protect from "./middleware/auth.middleware.js";
 import { proxyWithHeader } from "./utils/proxyWithHeader.js";
@@ -16,6 +17,7 @@ app.use(cors({
   credentials:true
 }))
 
+app.use(morgan("dev"))
 app.use(cookieParser())
 
 app.use("/api/auth" ,proxy(process.env.AUTH_SERVICE))

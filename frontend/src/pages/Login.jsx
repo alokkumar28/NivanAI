@@ -75,10 +75,6 @@ function Login() {
           .
         </p>
       </div>
-
-      <p className="absolute bottom-6 text-xs tracking-wide text-[#9292A5]/60">
-        Nivan AI · Intelligent by design
-      </p>
     </div>
   );
 }
