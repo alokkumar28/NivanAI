@@ -14,9 +14,10 @@ export const getMemory = async (conversationId) => {
         return parsed;
       }
     }
-    const messages = (await getMessages(conversationId)) ?? [];
-    await redis.set(key, JSON.stringify(messages), "EX", 24 * 60 * 60);
-    return messages;
+    const messages = (await getMessages(conversationId)) || [];
+    const safeMessages = Array.isArray(messages) ? messages : (messages.messages || []);
+    await redis.set(key, JSON.stringify(safeMessages), "EX", 24 * 60 * 60);
+    return safeMessages;
   } catch (error) {
     console.error("getMemory error:", error);
     return [];

@@ -5,9 +5,11 @@ import { useSelector, useDispatch } from "react-redux";
 import { createConversation } from "../features/createConversation";
 import {
   addConversation,
+  setConversationTitle,
   setSelectedConversation,
 } from "../redux/conversationSlice";
 import { addMessage, setLoading } from "../redux/messageSlice";
+import { updateConversation } from "../features/updateConversation";
 
 function ChatInput() {
   const [input, setInput] = useState("");
@@ -15,44 +17,58 @@ function ChatInput() {
   const dispatch = useDispatch();
 
   const handleSendMessage = async () => {
-    if (!input.trim()) return;
-
     const promptText = input.trim();
-    let currentConversationId = selectedConversation?._id;
+    if (!promptText) return;
+    let conversation = selectedConversation;
+
+    // 1. Create a new conversation if none is selected
+    if (!conversation) {
+      try {
+        const conv = await createConversation();
+        dispatch(addConversation(conv));
+        dispatch(setSelectedConversation(conv));
+        conversation = conv;
+      } catch (error) {
+        console.error("Failed to create conversation:", error);
+        return;
+      }
+    }
+
+    // 2. Update the title if the conversation is still "New Chat"
+    if (conversation.title === "New Chat") {
+      try {
+        await updateConversation({ id: conversation?._id, title: promptText });
+        dispatch(
+          setConversationTitle({
+            conversationId: conversation?._id,
+            title: promptText,
+          }),
+        );
+      } catch (error) {
+        console.error("Failed to update conversation title:", error);
+      }
+    }
+
+    // 3. Prepare payload
+    const payload = {
+      prompt: promptText,
+      conversationId: conversation?._id,
+    };
+
+    const userMsg = {
+      _id: Date.now().toString() + "user",
+      role: "user",
+      content: promptText,
+      createdAt: new Date().toISOString(),
+    };
+
+    dispatch(addMessage(userMsg));
+    dispatch(setLoading(true));
     setInput("");
 
+    // 4. Send to backend and handle AI response
     try {
-      if (!currentConversationId) {
-        const convData = await createConversation();
-        const newConv = convData?.conversation;
-
-        if (newConv) {
-          dispatch(addConversation(newConv));
-          dispatch(setSelectedConversation(newConv));
-          currentConversationId = newConv._id;
-        } else {
-          console.error("Failed to create a new conversation");
-          return;
-        }
-      }
-
-      const userMsg = {
-        _id: Date.now().toString(),
-        role: "user",
-        content: promptText,
-        createdAt: new Date().toISOString(),
-      };
-      dispatch(addMessage(userMsg));
-
-      dispatch(setLoading(true));
-
-      const payload = {
-        prompt: promptText,
-        conversationId: currentConversationId,
-      };
-
       const data = await sendMessage(payload);
-
       if (data) {
         const aiMsg = {
           _id: Date.now().toString() + "ai",
@@ -63,7 +79,7 @@ function ChatInput() {
         dispatch(addMessage(aiMsg));
       }
     } catch (error) {
-      console.error("Error in handleSendMessage:", error);
+      console.error("Error sending message:", error);
     } finally {
       dispatch(setLoading(false));
     }

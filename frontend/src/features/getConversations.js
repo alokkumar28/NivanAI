@@ -4,7 +4,7 @@ export const getConversations = async () => {
   try {
     const { data } = await api.get("/api/chat/get-conversations");
     console.log(data)
-    return data;
+    return data.conversations; 
   } catch (error) {
     console.log(error);
     return [];

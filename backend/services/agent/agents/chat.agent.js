@@ -85,6 +85,6 @@ Always prioritize accuracy, usefulness, clarity, and the user's actual intent.
 
   return {
     ...state,
-    aiResponse: response.content,
+    aiResponse: response.content || "I'm sorry, I couldn't process that.",
   };
 };

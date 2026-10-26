@@ -25,9 +25,11 @@ import { setUserdata } from "../redux/userSlice";
 
 function SideBar({ collapsed, setCollapsed }) {
   const { userData } = useSelector((state) => state.user);
-  const { conversations, selectedConversation } = useSelector((state) => state.conversation);
+  const { conversations, selectedConversation } = useSelector(
+    (state) => state.conversation,
+  );
   const dispatch = useDispatch();
-
+  console.log(selectedConversation);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -35,23 +37,21 @@ function SideBar({ collapsed, setCollapsed }) {
     const getCon = async () => {
       try {
         const data = await getConversations();
-        const convArray = data?.conversations || [];
-        dispatch(setConversations(convArray));
+        dispatch(setConversations(data));
       } catch (error) {
         console.error("Failed to fetch conversations", error);
       }
     };
     getCon();
-  }, [dispatch]);
+  }, []);
 
   const handleCreateConversation = async () => {
     try {
       const data = await createConversation();
-      const newConv = data?.conversation;
-      if (newConv) {
-        dispatch(addConversation(newConv));
-        dispatch(setSelectedConversation(newConv));
-        setMobileOpen(false); 
+      if (data) {
+        dispatch(addConversation(data));
+        dispatch(setSelectedConversation(data));
+        setMobileOpen(false);
       }
     } catch (error) {
       console.error("Failed to create conversation", error);
@@ -63,14 +63,13 @@ function SideBar({ collapsed, setCollapsed }) {
     setMobileOpen(false);
   };
 
-  const safeConversations = Array.isArray(conversations) ? conversations : [];
   const credits = 1240;
 
   return (
     <>
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed top-3 left-3 z-[60] p-2 rounded-lg bg-[#13131D] border border-[#272735] text-[#9292A5] hover:text-[#A78BFA] transition-colors"
+        className="lg:hidden fixed top-3 left-3 z-60 p-2 rounded-lg bg-[#13131D] border border-[#272735] text-[#9292A5] hover:text-[#A78BFA] transition-colors"
         aria-label="Open sidebar"
       >
         <Menu size={20} />
@@ -79,19 +78,19 @@ function SideBar({ collapsed, setCollapsed }) {
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
-          className="lg:hidden fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm"
+          className="lg:hidden fixed inset-0 z-70 bg-black/60 backdrop-blur-sm"
           aria-hidden="true"
         />
       )}
 
       <aside
         className={`
-          fixed top-0 left-0 z-[80] h-screen
+          fixed top-0 left-0 z-80 h-screen
           bg-[#09090F] border-r border-[#272735]
           flex flex-col select-none
           transition-all duration-300 ease-in-out
-          ${collapsed ? "lg:w-[68px]" : "lg:w-[260px]"}
-          w-[260px]
+          ${collapsed ? "lg:w-17" : "lg:w-65"}
+          w-65
           ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
@@ -155,7 +154,7 @@ function SideBar({ collapsed, setCollapsed }) {
           </button>
         </div>
 
-        {!collapsed && safeConversations.length > 0 && (
+        {!collapsed && conversations.length > 0 && (
           <div className="px-4 pt-2 pb-1 shrink-0">
             <p className="text-[11px] font-semibold text-[#9292A5] uppercase tracking-wider">
               Recent Chats
@@ -163,8 +162,8 @@ function SideBar({ collapsed, setCollapsed }) {
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto px-2.5 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {safeConversations.length === 0 ? (
+        <div className="flex-1 overflow-y-auto px-2.5 pb-2 scrollbar-none [&::-webkit-scrollbar]:hidden">
+          {conversations.length === 0 ? (
             <div
               className={`flex flex-col items-center justify-center text-center mt-10 px-4 ${
                 collapsed ? "lg:hidden" : ""
@@ -182,14 +181,15 @@ function SideBar({ collapsed, setCollapsed }) {
             </div>
           ) : (
             <div className="space-y-0.5 mt-1">
-              {safeConversations.map((conv) => {
+              {conversations.map((conv, index) => {
                 if (!conv) return null;
                 const isActive = selectedConversation?._id === conv?._id;
                 const title = conv.title || "New Chat";
+                const uniqueKey = conv._id || `fallback-${index}`;
 
                 return (
                   <div
-                    key={conv._id}
+                    key={uniqueKey}
                     onClick={() => handleSelectConversation(conv)}
                     title={title}
                     className={`group flex items-center gap-2.5 cursor-pointer px-2.5 py-2.5 rounded-[10px] border transition-colors duration-150 ${

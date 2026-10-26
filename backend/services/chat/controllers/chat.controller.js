@@ -28,16 +28,7 @@ export const createConversation = async (req, res) => {
 
 export const updateConversation = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { title } = req.body;
-    const userId = req.headers["x-user-id"];
-
-    if (!userId) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized: missing user context",
-      });
-    }
+    const { id, title } = req.body;
 
     if (!title) {
       return res.status(400).json({
@@ -46,11 +37,9 @@ export const updateConversation = async (req, res) => {
       });
     }
 
-    const conversation = await Conversation.findOneAndUpdate(
-      { _id: id, userId },
-      { title },
-      { new: true, runValidators: true }
-    );
+    const conversation = await Conversation.findByIdAndUpdate(id, {
+      title
+    });
 
     if (!conversation) {
       return res.status(404).json({
@@ -82,7 +71,7 @@ export const getConversations = async (req, res) => {
       });
     }
     const conversations = await Conversation.find({ userId }).sort({
-      updatedAt: -1, 
+      updatedAt: -1,
     });
     return res.status(200).json({
       conversations,
@@ -159,7 +148,7 @@ export const getMessages = async (req, res) => {
     }
 
     const messages = await Message.find({ conversationId }).sort({
-      createdAt: 1, 
+      createdAt: 1,
     });
 
     return res.status(200).json({
