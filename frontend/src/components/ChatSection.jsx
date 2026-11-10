@@ -2,16 +2,18 @@ import Nav from "./Nav";
 import MessageSection from "./MessageSection";
 import ChatInput from "./ChatInput";
 import { useDispatch, useSelector } from "react-redux";
-import { useEffect } from "react";
+import { useEffect} from "react";
 import { getMessages } from "../features/getMesseges";
 import { setMessages } from "../redux/messageSlice";
 
 function ChatSection({ sidebarCollapsed, showArtifact, onToggleArtifact }) {
   const { selectedConversation } = useSelector((state) => state.conversation);
+  const {isLoading} = useSelector((state)=>state.message);
   const dispatch = useDispatch();
 
   useEffect(() => {
     const getMesg = async () => {
+      if (isLoading) return;
       // 1. Check if the ID actually exists, not just the object
       if (selectedConversation?._id) {
         try {
@@ -28,7 +30,7 @@ function ChatSection({ sidebarCollapsed, showArtifact, onToggleArtifact }) {
 
     getMesg();
     // 2. Depend on the primitive _id string, not the whole object
-  }, [selectedConversation?._id, dispatch]);
+  }, [selectedConversation?._id, dispatch , isLoading]);
 
   return (
     <div
